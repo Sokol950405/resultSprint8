@@ -40,6 +40,7 @@ func TestAddGetDelete(t *testing.T) {
 	// add
 	// добавьте новую посылку в БД, убедитесь в отсутствии ошибки и наличии идентификатора
 	id, err := store.Add(parcel)
+	parcel.Number = id
 	require.NoError(t, err)
 	require.Greater(t, id, 0)
 	// get
@@ -47,18 +48,15 @@ func TestAddGetDelete(t *testing.T) {
 	// проверьте, что значения всех полей в полученном объекте совпадают со значениями полей в переменной parcel
 	storedParcel, err := store.Get(id)
 	require.NoError(t, err)
-	require.Equal(t, parcel.Client, storedParcel.Client)
-	require.Equal(t, parcel.Status, storedParcel.Status)
-	require.Equal(t, parcel.Address, storedParcel.Address)
-	require.Equal(t, parcel.CreatedAt, storedParcel.CreatedAt)
+	require.Equal(t, parcel, storedParcel)
+
 	// delete
 	// удалите добавленную посылку, убедитесь в отсутствии ошибки
 	err = store.Delete(id)
 	require.NoError(t, err)
 	// проверьте, что посылку больше нельзя получить из БД
 	storedParcel, err = store.Get(id)
-	require.NoError(t, err)
-	require.Equal(t, 0, storedParcel.Number)
+	require.Error(t, err)
 }
 
 // TestSetAddress проверяет обновление адреса
@@ -158,9 +156,6 @@ func TestGetByClient(t *testing.T) {
 		require.True(t, exists, "Посылка с номером %d не найдена в parcelMap", parcel.Number)
 
 		// убедитесь, что значения полей полученных посылок заполнены верно
-		require.Equal(t, expectedParcel.Client, parcel.Client)
-		require.Equal(t, expectedParcel.Status, parcel.Status)
-		require.Equal(t, expectedParcel.Address, parcel.Address)
-		require.Equal(t, expectedParcel.CreatedAt, parcel.CreatedAt)
+		require.Equal(t, expectedParcel, parcel)
 	}
 }

@@ -33,21 +33,11 @@ func (s ParcelStore) Add(p Parcel) (int, error) {
 func (s ParcelStore) Get(number int) (Parcel, error) {
 	// реализуйте чтение строки по заданному number
 	// здесь из таблицы должна вернуться только одна строка
-	rows, err := s.db.Query("SELECT number, client, status, address, created_at FROM parcel WHERE number = :number",
-		sql.Named("number", number))
 	// заполните объект Parcel данными из таблицы
 	p := Parcel{}
-	if err != nil {
-		return p, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		err := rows.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
-		if err != nil {
-			return p, err
-		}
-	}
-	return p, nil
+	err := s.db.QueryRow("SELECT number, client, status, address, created_at FROM parcel WHERE number = ?",
+		number).Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
+	return p, err
 }
 
 func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
@@ -69,6 +59,10 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 			return res, err
 		}
 		res = append(res, p)
+	}
+	err = rows.Err()
+	if err != nil {
+		return res, err
 	}
 	return res, nil
 }
